@@ -1,5 +1,33 @@
 namespace Order;
 
+public enum DeliveryStatus
+
+{
+    Pending,   
+    Processing,
+    Shipped,
+    Delivered  
+}
+
+public class Delivery
+{
+    public Address Address { get; set; }
+    public DeliveryStatus Status { get; set; }
+    public DateTime EstimatedTimeDelivery { get; set; }
+
+    public Delivery(Address address, DateTime estimatedTimeDelivery)
+    {
+        Address = address;
+        Status = DeliveryStatus.Pending;
+        EstimatedTimeDelivery = estimatedTimeDelivery;
+    }
+
+    public void UpdateStatus(DeliveryStatus newStatus)
+    {
+        Status = newStatus;
+    }
+}
+
 public class Payment
 {
 }
@@ -25,6 +53,7 @@ public class Order
     public string State { get; set; }
     private List<OrderItem> items = new();
     public int Version { get; set; }
+    public Delivery Delivery { get; private set; }
     public IReadOnlyList<OrderItem> Items => items;
 
     public void Modify(int index, int newCount)
@@ -50,6 +79,17 @@ public class Order
         items.RemoveAt(index);
     }
 
+    public void AddDelivery(Address address, DateTime estimatedTimeDelivery)
+    {
+        if (Delivery != null) throw Exception();
+        Delivery = new Delivery(address, estimatedTimeDelivery);
+    }
+    
+    public void UpdateDeliveryStatus(DeliveryStatus status)
+    {
+        if (Delivery == null) throw Exception();
+        Delivery.UpdateStatus(status);
+    }
     private void GuardAgainstMinimumPrice(IEnumerable<OrderItem> items, decimal minimumAmount)
     {
         if (items.Sum(it => it.Price.Value * it.Count) < minimumAmount)
@@ -83,3 +123,4 @@ public class Money
         Value = value;
     }
 }
+
